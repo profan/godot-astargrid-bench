@@ -217,6 +217,24 @@ func _ready():
 	
 	# _mark_inaccessible()
 
+func _bench_astar(which, astar, from_pos, to_pos):
+	var new_path
+	var start_usec
+	if astar.has_method("get_grid_path"):
+		start_usec = OS.get_ticks_usec()
+		new_path = astar.get_grid_path(Vector2(0, 0), to_pos)
+	else:
+		var from_id = astar.get_closest_point(from_pos)
+		var target_id = astar.get_closest_point(to_pos)
+		start_usec = OS.get_ticks_usec()
+		new_path = astar.get_point_path(from_id, target_id)
+	var took_usec = OS.get_ticks_usec() - start_usec
+	print("%s astar took: %d usec" % [which, took_usec])
+	var elem_per_usec = (visual_grid_w * visual_grid_w) / float(took_usec)
+	print("elements per usec: %f" % elem_per_usec)
+	print("number of steps: %d \n" % new_path.size())
+	return new_path
+
 func _input(event):
 	if event is InputEventMouseButton:
 		if event.pressed and event.button_index == BUTTON_LEFT:
@@ -225,17 +243,8 @@ func _input(event):
 			var click_grid_x = click_pos.x / (vp_size.x / float(visual_grid_w))
 			var click_grid_y = click_pos.y / (vp_size.y / float(visual_grid_w))
 			var click_grid_pos = Vector2(click_grid_x, click_grid_y)
-			var start_usec = OS.get_ticks_usec()
 			
-			var new_path
-			if current_astar.has_method("get_grid_path"):
-				new_path = current_astar.get_grid_path(Vector2(0, 0), click_grid_pos)
-			else:
-				new_path = current_astar.get_point_path(0, position_to_index(visual_grid_w, visual_grid_h, click_grid_pos))
-			var took_usec = OS.get_ticks_usec() - start_usec
-			print("our astar took: %d usec" % took_usec)
-			var elem_per_usec = (visual_grid_w * visual_grid_w) / float(took_usec)
-			print("elements per usec: %f" % elem_per_usec)
-			print("number of steps: %d" % new_path.size())
-			_draw_grid(new_path)
+			var first_path = _bench_astar("our", current_astar, Vector2(0, 0), click_grid_pos)
+			var second_path = _bench_astar("default", other_astar, Vector2(0, 0), click_grid_pos)
+			_draw_grid(first_path)
 			update()
