@@ -148,7 +148,7 @@ func _test_our_fully_connected_astar(grid_width, grid_height):
 	
 	for x in grid_width:
 		for y in grid_height:
-			our_astar.connect_point(Vector2(x, y), 1)
+			our_astar.connect_to_neighbours(Vector2(x, y), 1)
 	
 	var start_our_usec = OS.get_ticks_usec()
 	var bigge_path = our_astar.get_grid_path(Vector2(0, 0), Vector2(grid_width - 1, grid_height - 1))
