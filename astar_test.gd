@@ -6,6 +6,8 @@ var visual_grid = {}
 var current_astar
 var other_astar
 
+const USE_DIAGONALS = true
+
 func _test_normal_simple():
 	
 	var new_astar = AStarGrid2D.new()
@@ -107,22 +109,22 @@ func _test_default_fully_connected_astar(grid_width, grid_height):
 				astar.connect_points(middle, top)
 				num_conns += 1
 			
-			if x > 0 && y > 0:
+			if x > 0 && y > 0 and USE_DIAGONALS:
 				var top_left = position_to_index(grid_width, grid_height, cur_pos + Vector2(-1, -1))
 				astar.connect_points(middle, top_left)
 				num_conns += 1
 			
-			if x < grid_width - 1 && y > 0:
+			if x < grid_width - 1 && y > 0 and USE_DIAGONALS:
 				var top_right = position_to_index(grid_width, grid_height, cur_pos + Vector2(1, -1))
 				astar.connect_points(middle, top_right)
 				num_conns += 1
 			
-			if x > 0 && y < grid_height - 1:
+			if x > 0 && y < grid_height - 1 and USE_DIAGONALS:
 				var bottom_left = position_to_index(grid_width, grid_height, cur_pos + Vector2(-1, 1))
 				astar.connect_points(middle, bottom_left)
 				num_conns += 1
 			
-			if x < grid_width - 1 && y < grid_height - 1:
+			if x < grid_width - 1 && y < grid_height - 1 and USE_DIAGONALS:
 				var bottom_right = position_to_index(grid_width, grid_height, cur_pos + Vector2(1, 1))
 				astar.connect_points(middle, bottom_right)
 				num_conns += 1
@@ -148,7 +150,7 @@ func _test_our_fully_connected_astar(grid_width, grid_height):
 	
 	for x in grid_width:
 		for y in grid_height:
-			our_astar.connect_to_neighbours(Vector2(x, y), 1)
+			our_astar.connect_to_neighbours(Vector2(x, y), 1, USE_DIAGONALS)
 	
 	var start_our_usec = OS.get_ticks_usec()
 	var bigge_path = our_astar.get_grid_path(Vector2(0, 0), Vector2(grid_width - 1, grid_height - 1))
