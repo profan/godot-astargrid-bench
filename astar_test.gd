@@ -245,10 +245,10 @@ func _mark_inaccessible():
 
 func _ready():
 	
-	var grid_width = 128
-	var grid_height = 128
+	var grid_width = 256
+	var grid_height = 256
 	
-	_generate_random_obstacles(grid_width, grid_height, 512)
+	_generate_random_obstacles(grid_width, grid_height, 32)
 	
 	# _test_normal_simple()
 	# _test_normal_astar(grid_width, grid_height)
@@ -271,12 +271,12 @@ func _ready():
 	
 	# _mark_inaccessible()
 
-func _bench_astar(which, astar, from_pos, to_pos):
+func _bench_astar(which, astar, from_pos, to_pos, use_std_vector=false):
 	var new_path
 	var start_usec
 	if astar.has_method("get_grid_path"):
 		start_usec = OS.get_ticks_usec()
-		new_path = astar.get_grid_path(Vector2(0, 0), to_pos)
+		new_path = astar.get_grid_path(Vector2(0, 0), to_pos, use_std_vector)
 	else:
 		var from_id = astar.get_closest_point(from_pos)
 		var target_id = astar.get_closest_point(to_pos)
@@ -298,8 +298,10 @@ func _input(event):
 			var click_grid_y = click_pos.y / (vp_size.y / float(visual_grid_h))
 			var click_grid_pos = Vector2(click_grid_x, click_grid_y)
 			
+			print("> benching move from: %s to %s" % [Vector2(0, 0), click_grid_pos])
 			var first_path = _bench_astar("our", current_astar, Vector2(0, 0), click_grid_pos)
 			var second_path = _bench_astar("default", other_astar, Vector2(0, 0), click_grid_pos)
+			var third_path = _bench_astar("our_std_vector", current_astar, Vector2(0, 0), click_grid_pos, true)
 			_draw_grid(first_path, Color.green)
 			_draw_grid(second_path, Color.red, false)
 			update()
