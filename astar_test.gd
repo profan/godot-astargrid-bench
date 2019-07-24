@@ -68,7 +68,7 @@ func position_to_index(width, height, pos):
 	var x = pos.x
 	var y = pos.y
 	if x < 0 or x >= width or y < 0 or y >= height: return -1
-	var i = (y * width) + x
+	var i = (x * height) + y
 	return i
 
 func _test_default_fully_connected_astar(grid_width, grid_height):
@@ -175,10 +175,10 @@ func _draw():
 		draw_rect(Rect2(e.x * g_w, e.y * g_h, t_w, t_h), visual_grid[e])
 	
 
-func _draw_grid(path):
-	visual_grid.clear()
+func _draw_grid(path, color, clear=true):
+	if clear: visual_grid.clear()
 	for e in path:
-		visual_grid[e] = Color.green
+		visual_grid[e] = color
 
 func _mark_inaccessible():
 	for x in visual_grid_w:
@@ -196,7 +196,7 @@ func _mark_inaccessible():
 
 func _ready():
 	
-	var grid_width = 256
+	var grid_width = 64
 	var grid_height = 256
 	
 	# _test_normal_simple()
@@ -215,7 +215,8 @@ func _ready():
 	visual_grid_h = grid_height
 	current_astar = our_astar
 	other_astar = normal_astar
-	_draw_grid(our_path)
+	_draw_grid(our_path, Color.red)
+	_draw_grid(normal_path, Color.green, false)
 	
 	# _mark_inaccessible()
 
@@ -243,10 +244,11 @@ func _input(event):
 			var vp_size = get_viewport_rect().size
 			var click_pos = event.position
 			var click_grid_x = click_pos.x / (vp_size.x / float(visual_grid_w))
-			var click_grid_y = click_pos.y / (vp_size.y / float(visual_grid_w))
+			var click_grid_y = click_pos.y / (vp_size.y / float(visual_grid_h))
 			var click_grid_pos = Vector2(click_grid_x, click_grid_y)
 			
 			var first_path = _bench_astar("our", current_astar, Vector2(0, 0), click_grid_pos)
 			var second_path = _bench_astar("default", other_astar, Vector2(0, 0), click_grid_pos)
-			_draw_grid(first_path)
+			_draw_grid(first_path, Color.green)
+			_draw_grid(second_path, Color.red, false)
 			update()
