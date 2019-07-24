@@ -3,6 +3,8 @@ extends Node2D
 var visual_grid_w
 var visual_grid_h
 var visual_grid = {}
+var obstacles = {}
+
 var current_astar
 var other_astar
 
@@ -69,7 +71,12 @@ func position_to_index(width, height, pos):
 	var y = pos.y
 	if x < 0 or x >= width or y < 0 or y >= height: return -1
 	var i = (x * height) + y
-	return i
+	return int(i)
+
+func index_to_position(width, height, i):
+	var x = i % height
+	var y = i / height
+	return Vector2(x, y)
 
 func _test_default_fully_connected_astar(grid_width, grid_height):
 	
@@ -88,44 +95,61 @@ func _test_default_fully_connected_astar(grid_width, grid_height):
 			
 			var cur_pos = Vector2(x, y)
 			var middle = position_to_index(grid_width, grid_height, cur_pos)
+			if middle in obstacles: continue
 			
 			if x > 0:
-				var left = position_to_index(grid_width, grid_height, cur_pos + Vector2(-1, 0))
+				var left_pos = cur_pos + Vector2(-1, 0)
+				var left = position_to_index(grid_width, grid_height, left_pos)
+				if left_pos in obstacles: continue
 				astar.connect_points(middle, left)
 				num_conns += 1
 			
 			if y < grid_height - 1:
-				var bottom = position_to_index(grid_width, grid_height, cur_pos + Vector2(0, 1))
+				var bottom_pos = cur_pos + Vector2(0, 1)
+				var bottom = position_to_index(grid_width, grid_height, bottom_pos)
+				if bottom_pos in obstacles: continue
 				astar.connect_points(middle, bottom)
 				num_conns += 1
 			
 			if x < grid_width - 1:
-				var right = position_to_index(grid_width, grid_height, cur_pos + Vector2(1, 0))
+				var right_pos = cur_pos + Vector2(1, 0)
+				var right = position_to_index(grid_width, grid_height, right_pos)
+				if right_pos in obstacles: continue
 				astar.connect_points(middle, right)
 				num_conns += 1
 			
 			if y > 0:
-				var top = position_to_index(grid_width, grid_height, cur_pos + Vector2(0, -1))
+				var top_pos = cur_pos + Vector2(0, -1)
+				var top = position_to_index(grid_width, grid_height, top_pos)
+				if top_pos in obstacles: continue
 				astar.connect_points(middle, top)
 				num_conns += 1
 			
 			if x > 0 && y > 0 and USE_DIAGONALS:
-				var top_left = position_to_index(grid_width, grid_height, cur_pos + Vector2(-1, -1))
+				var top_left_pos = cur_pos + Vector2(-1, -1)
+				var top_left = position_to_index(grid_width, grid_height, top_left_pos)
+				if top_left_pos in obstacles: continue
 				astar.connect_points(middle, top_left)
 				num_conns += 1
 			
 			if x < grid_width - 1 && y > 0 and USE_DIAGONALS:
-				var top_right = position_to_index(grid_width, grid_height, cur_pos + Vector2(1, -1))
+				var top_right_pos = cur_pos + Vector2(1, -1)
+				var top_right = position_to_index(grid_width, grid_height, top_right_pos)
+				if top_right in obstacles: continue
 				astar.connect_points(middle, top_right)
 				num_conns += 1
 			
 			if x > 0 && y < grid_height - 1 and USE_DIAGONALS:
-				var bottom_left = position_to_index(grid_width, grid_height, cur_pos + Vector2(-1, 1))
+				var bottom_left_pos = cur_pos + Vector2(-1, 1)
+				var bottom_left = position_to_index(grid_width, grid_height, bottom_left_pos)
+				if bottom_left_pos in obstacles: continue
 				astar.connect_points(middle, bottom_left)
 				num_conns += 1
 			
 			if x < grid_width - 1 && y < grid_height - 1 and USE_DIAGONALS:
-				var bottom_right = position_to_index(grid_width, grid_height, cur_pos + Vector2(1, 1))
+				var bottom_right_pos =  cur_pos + Vector2(1, 1)
+				var bottom_right = position_to_index(grid_width, grid_height, bottom_right_pos)
+				if bottom_right_pos in obstacles: continue
 				astar.connect_points(middle, bottom_right)
 				num_conns += 1
 			
@@ -152,6 +176,12 @@ func _test_our_fully_connected_astar(grid_width, grid_height):
 		for y in grid_height:
 			our_astar.connect_to_neighbours(Vector2(x, y), 1, USE_DIAGONALS)
 	
+	for x in grid_width:
+		for y in grid_height:
+			var cur_pos = Vector2(x, y)
+			if cur_pos in obstacles:
+				our_astar.disconnect_from_neighbours(cur_pos)
+	
 	var start_our_usec = OS.get_ticks_usec()
 	var bigge_path = our_astar.get_grid_path(Vector2(0, 0), Vector2(grid_width - 1, grid_height - 1))
 	var took_our_usec = OS.get_ticks_usec() - start_our_usec
@@ -163,6 +193,23 @@ func _test_our_fully_connected_astar(grid_width, grid_height):
 	
 	return [our_astar, bigge_path]
 
+func _generate_random_obstacles(w, h, max_obstacles):
+	
+	var count = int(rand_range(0, max_obstacles))
+	
+	for n in count:
+		var x = int(rand_range(0, w))
+		var y = int(rand_range(0, h))
+		var size = int(rand_range(0, 8))
+		var l_x = x - (size / 2)
+		var l_y = y - (size / 2)
+		var center = Vector2(x, y)
+		for t_x in size:
+			for t_y in size:
+				var c = Vector2(l_x + t_x, l_y + t_y)
+				if c.distance_to(center) <= size / 2:
+					obstacles[c] = true
+
 func _draw():
 	
 	var vp_size = get_viewport_rect().size
@@ -171,9 +218,11 @@ func _draw():
 	var t_w = g_w
 	var t_h = g_h
 	
+	for o in obstacles:
+		draw_rect(Rect2(o.x * g_w, o.y * g_h, t_w, t_h), Color.pink)
+	
 	for e in visual_grid:
 		draw_rect(Rect2(e.x * g_w, e.y * g_h, t_w, t_h), visual_grid[e])
-	
 
 func _draw_grid(path, color, clear=true):
 	if clear: visual_grid.clear()
@@ -189,15 +238,17 @@ func _mark_inaccessible():
 				p = current_astar.get_grid_path(Vector2(0, 0), target)
 			else:
 				p = current_astar.get_point_path(0, position_to_index(visual_grid_w, visual_grid_h, target))
-			if p.size() == 1 and target.distance_to(Vector2(0, 0)) > 1:
+			if p.size() == 0 and target.distance_to(Vector2(0, 0)) > 1:
 				visual_grid[target] = Color.red
 			else:
 				visual_grid[target] = Color.green
 
 func _ready():
 	
-	var grid_width = 64
-	var grid_height = 256
+	var grid_width = 128
+	var grid_height = 128
+	
+	_generate_random_obstacles(grid_width, grid_height, 512)
 	
 	# _test_normal_simple()
 	# _test_normal_astar(grid_width, grid_height)
