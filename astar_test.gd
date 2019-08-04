@@ -12,7 +12,7 @@ const USE_DIAGONALS = true
 
 func _test_normal_simple():
 	
-	var new_astar = AStarGrid2D.new()
+	var new_astar = AStarGridFixed2D.new()
 	new_astar.resize(1000, 1000)
 	
 	new_astar.connect_points(Vector2(0, 0), Vector2(0, 1), 1)
@@ -46,7 +46,7 @@ func _test_normal_astar(grid_width, grid_height):
 
 func _test_our_astar(grid_width, grid_height):
 	
-	var our_astar = AStarGrid2D.new()
+	var our_astar = AStarGridFixed2D.new()
 	our_astar.resize(grid_width, grid_height)
 	
 	for x in grid_width:
@@ -167,9 +167,9 @@ func _test_default_fully_connected_astar(grid_width, grid_height):
 	return [astar, normal_path]
 	
 
-func _test_our_fully_connected_astar(grid_width, grid_height):
+func _test_our_fully_connected_astar(instance, grid_width, grid_height):
 	
-	var our_astar = AStarGrid2D.new()
+	var our_astar = instance
 	our_astar.resize(grid_width, grid_height)
 	
 	for x in grid_width:
@@ -245,10 +245,10 @@ func _mark_inaccessible():
 
 func _ready():
 	
-	var grid_width = 128
-	var grid_height = 128
+	var grid_width = 256
+	var grid_height = 256
 	
-	_generate_random_obstacles(grid_width, grid_height, 512)
+	# _generate_random_obstacles(grid_width, grid_height, 512)
 	
 	# _test_normal_simple()
 	# _test_normal_astar(grid_width, grid_height)
@@ -258,7 +258,7 @@ func _ready():
 	var normal_astar = normal[0]
 	var normal_path = normal[1]
 	
-	var our = _test_our_fully_connected_astar(grid_width, grid_height)
+	var our = _test_our_fully_connected_astar(AStarGridFixed2D.new(), grid_width, grid_height)
 	var our_astar = our[0]
 	var our_path = our[1]
 	
@@ -268,7 +268,6 @@ func _ready():
 	other_astar = normal_astar
 	_draw_grid(our_path, Color.red)
 	_draw_grid(normal_path, Color.green, false)
-	
 	# _mark_inaccessible()
 
 func _bench_astar(which, astar, from_pos, to_pos):
@@ -277,11 +276,13 @@ func _bench_astar(which, astar, from_pos, to_pos):
 	if astar.has_method("get_grid_path"):
 		start_usec = OS.get_ticks_usec()
 		new_path = astar.get_grid_path(Vector2(0, 0), to_pos)
+		# print(new_path)
 	else:
 		var from_id = astar.get_closest_point(from_pos)
 		var target_id = astar.get_closest_point(to_pos)
 		start_usec = OS.get_ticks_usec()
 		new_path = astar.get_point_path(from_id, target_id)
+		# print(new_path)
 	var took_usec = OS.get_ticks_usec() - start_usec
 	print("%s astar took: %d usec" % [which, took_usec])
 	var elem_per_usec = (visual_grid_w * visual_grid_w) / float(took_usec)
