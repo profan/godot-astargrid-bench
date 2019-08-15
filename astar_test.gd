@@ -10,61 +10,61 @@ var other_astar
 
 const USE_DIAGONALS = true
 
-func _test_normal_simple():
-	
-	var new_astar = AStarGridFixed2D.new()
-	new_astar.resize(1000, 1000)
-	
-	new_astar.connect_points(Vector2(0, 0), Vector2(0, 1), 1)
-	new_astar.connect_points(Vector2(0, 1), Vector2(0, 2), 1)
-	new_astar.connect_points(Vector2(0, 2), Vector2(1, 2), 1)
-	
-	var path = new_astar.get_grid_path(Vector2(0, 0), Vector2(1, 2))
+#func _test_normal_simple():
+#
+#	var new_astar = AStarThin2D.new()
+#	new_astar.resize(1000, 1000)
+#
+#	new_astar.connect_points(Vector2(0, 0), Vector2(0, 1), 1)
+#	new_astar.connect_points(Vector2(0, 1), Vector2(0, 2), 1)
+#	new_astar.connect_points(Vector2(0, 2), Vector2(1, 2), 1)
+#
+#	var path = new_astar.get_grid_path(Vector2(0, 0), Vector2(1, 2))
 	
 
-func _test_normal_astar(grid_width, grid_height):
-	
-	var normal_astar = AStar2D.new()
-	
-	var i = 0
-	for x in grid_width:
-		for y in grid_height:
-			normal_astar.add_point(i, Vector2(x, y))
-			i += 1
-	
-	for i in grid_width * grid_height:
-		if i < grid_height * grid_width - 1:
-			normal_astar.connect_points(i, i + 1)
-	
-	var start_normal_usec = OS.get_ticks_usec()
-	var normal_path = normal_astar.get_point_path(0, grid_width * grid_height - 1)
-	var took_normal_usec = OS.get_ticks_usec() - start_normal_usec
-	print("normal astar took: %d usec" % took_normal_usec)
-	var norm_elem_per_usec = (grid_width * grid_height) / float(took_normal_usec)
-	print("elements per usec: %f" % norm_elem_per_usec)
-	# print(normal_path)
+#func _test_normal_astar(grid_width, grid_height):
+#
+#	var normal_astar = AStar2D.new()
+#
+#	var i = 0
+#	for x in grid_width:
+#		for y in grid_height:
+#			normal_astar.add_point(i, Vector2(x, y))
+#			i += 1
+#
+#	for i in grid_width * grid_height:
+#		if i < grid_height * grid_width - 1:
+#			normal_astar.connect_points(i, i + 1)
+#
+#	var start_normal_usec = OS.get_ticks_usec()
+#	var normal_path = normal_astar.get_point_path(0, grid_width * grid_height - 1)
+#	var took_normal_usec = OS.get_ticks_usec() - start_normal_usec
+#	print("normal astar took: %d usec" % took_normal_usec)
+#	var norm_elem_per_usec = (grid_width * grid_height) / float(took_normal_usec)
+#	print("elements per usec: %f" % norm_elem_per_usec)
+#	# print(normal_path)
 
-func _test_our_astar(grid_width, grid_height):
-	
-	var our_astar = AStarGridFixed2D.new()
-	our_astar.resize(grid_width, grid_height)
-	
-	for x in grid_width:
-		for y in grid_height:
-			if x != grid_width - 1:
-				our_astar.connect_points(Vector2(x, y), Vector2(x + 1, y), 1)
-			else:
-				our_astar.connect_points(Vector2(x, y), Vector2(x, y + 1), 1)
-	
-	var start_our_usec = OS.get_ticks_usec()
-	var bigge_path = our_astar.get_grid_path(Vector2(0, 0), Vector2(grid_width - 1, grid_height - 1))
-	var took_our_usec = OS.get_ticks_usec() - start_our_usec
-	print("our astar took: %d usec" % took_our_usec)
-	var our_elem_per_usec = (grid_width * grid_height) / float(took_our_usec)
-	print("elements per usec: %f" % our_elem_per_usec)
-	# print(bigge_path)
-	
-	return bigge_path
+#func _test_our_astar(grid_width, grid_height):
+#
+#	var our_astar = AStarGridFixed2D.new()
+#	our_astar.resize(grid_width, grid_height)
+#
+#	for x in grid_width:
+#		for y in grid_height:
+#			if x != grid_width - 1:
+#				our_astar.connect_points(Vector2(x, y), Vector2(x + 1, y), 1)
+#			else:
+#				our_astar.connect_points(Vector2(x, y), Vector2(x, y + 1), 1)
+#
+#	var start_our_usec = OS.get_ticks_usec()
+#	var bigge_path = our_astar.get_grid_path(Vector2(0, 0), Vector2(grid_width - 1, grid_height - 1))
+#	var took_our_usec = OS.get_ticks_usec() - start_our_usec
+#	print("our astar took: %d usec" % took_our_usec)
+#	var our_elem_per_usec = (grid_width * grid_height) / float(took_our_usec)
+#	print("elements per usec: %f" % our_elem_per_usec)
+#	# print(bigge_path)
+#
+#	return bigge_path
 
 func position_to_index(width, height, pos):
 	var x = pos.x
@@ -78,9 +78,9 @@ func index_to_position(width, height, i):
 	var y = i / height
 	return Vector2(x, y)
 
-func _test_default_fully_connected_astar(grid_width, grid_height):
+func _test_default_fully_connected_astar(instance, grid_width, grid_height):
 	
-	var astar = AStar2D.new()
+	var astar = instance
 	
 	var i = 0
 	for x in grid_width:
@@ -254,21 +254,24 @@ func _ready():
 	# _test_normal_astar(grid_width, grid_height)
 	# var our_path = _test_our_astar(grid_width, grid_height)
 	
-	var normal = _test_default_fully_connected_astar(grid_width, grid_height)
+	var normal = _test_default_fully_connected_astar(AStar2D.new(), grid_width, grid_height)
 	var normal_astar = normal[0]
 	var normal_path = normal[1]
 	
-	var our = _test_our_fully_connected_astar(AStarGridFixed2D.new(), grid_width, grid_height)
+	var our = _test_default_fully_connected_astar(AStarThin2D.new(), grid_width, grid_height)
 	var our_astar = our[0]
 	var our_path = our[1]
 	
 	visual_grid_w = grid_width
 	visual_grid_h = grid_height
+	
 	current_astar = our_astar
 	other_astar = normal_astar
+	
 	_draw_grid(our_path, Color.red)
 	_draw_grid(normal_path, Color.green, false)
 	# _mark_inaccessible()
+	
 
 func _bench_astar(which, astar, from_pos, to_pos):
 	var new_path
@@ -299,8 +302,8 @@ func _input(event):
 			var click_grid_y = click_pos.y / (vp_size.y / float(visual_grid_h))
 			var click_grid_pos = Vector2(click_grid_x, click_grid_y)
 			
-			var first_path = _bench_astar("our", current_astar, Vector2(0, 0), click_grid_pos)
-			var second_path = _bench_astar("default", other_astar, Vector2(0, 0), click_grid_pos)
+			var first_path = _bench_astar("thin astar", current_astar, Vector2(0, 0), click_grid_pos)
+			var second_path = _bench_astar("default astar", other_astar, Vector2(0, 0), click_grid_pos)
 			_draw_grid(first_path, Color.green)
 			_draw_grid(second_path, Color.red, false)
 			update()
