@@ -248,7 +248,7 @@ func _ready():
 	var grid_width = 256
 	var grid_height = 256
 	
-	# _generate_random_obstacles(grid_width, grid_height, 512)
+	_generate_random_obstacles(grid_width, grid_height, 512)
 	
 	# _test_normal_simple()
 	# _test_normal_astar(grid_width, grid_height)
